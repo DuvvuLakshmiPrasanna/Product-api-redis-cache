@@ -273,19 +273,39 @@ Add these before final submission:
 
 ## Screenshots
 
-Screenshots captured during live verification of health, cache-aside behavior, invalidation, and fallback.
+Screenshots captured during live verification of health, cache-aside behavior, invalidation, TTL expiry, and Redis fallback.
 
-![Screenshot 2026-02-18 160838](Screenshots/Screenshot%202026-02-18%20160838.png)
-![Screenshot 2026-02-18 161011](Screenshots/Screenshot%202026-02-18%20161011.png)
-![Screenshot 2026-02-18 161040](Screenshots/Screenshot%202026-02-18%20161040.png)
-![Screenshot 2026-02-18 161948](Screenshots/Screenshot%202026-02-18%20161948.png)
-![Screenshot 2026-02-18 162113](Screenshots/Screenshot%202026-02-18%20162113.png)
-![Screenshot 2026-02-18 162222](Screenshots/Screenshot%202026-02-18%20162222.png)
-![Screenshot 2026-02-18 162322](Screenshots/Screenshot%202026-02-18%20162322.png)
+**1) API health check**
+
+![API health check](Screenshots/Screenshot%202026-02-18%20160838.png)
+
+**2) Product created via POST /products**
+
+![POST create product](Screenshots/Screenshot%202026-02-18%20161011.png)
+
+**3) Cache miss then set (first GET)**
+
+![Cache miss then set](Screenshots/Screenshot%202026-02-18%20161040.png)
+
+**4) Cache hit (second GET, no SET)**
+
+![Cache hit](Screenshots/Screenshot%202026-02-18%20161948.png)
+
+**5) PUT invalidates cache (DEL)**
+
+![PUT invalidation](Screenshots/Screenshot%202026-02-18%20162113.png)
+
+**6) DELETE invalidates cache and GET returns 404**
+
+![DELETE invalidation + 404](Screenshots/Screenshot%202026-02-18%20162222.png)
+
+**7) Redis down fallback (GET still returns 200)**
+
+![Redis fallback](Screenshots/Screenshot%202026-02-18%20162322.png)
 
 ## Demo Video
 
-- Demo link (2-5 minutes): `https://your-video-link-here`
+- Demo link (2-5 minutes): <add your video link here>
 
 ## Quick Demo Flow (for video)
 
