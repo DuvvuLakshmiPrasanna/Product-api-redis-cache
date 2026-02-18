@@ -279,126 +279,46 @@ Screenshots captured during live verification of health, cache-aside behavior, i
 
 ![API health check](Screenshots/Screenshot%202026-02-18%20160838.png)
 
+This confirms the service is running and responding with `{"status":"ok"}` on `/health`.
+
 **2) Product created via POST /products**
 
 ![POST create product](Screenshots/Screenshot%202026-02-18%20161011.png)
+
+Shows a successful create request returning `201 Created` with a generated `id` and the full product payload.
 
 **3) Cache miss then set (first GET)**
 
 ![Cache miss then set](Screenshots/Screenshot%202026-02-18%20161040.png)
 
+First read hits the DB and then writes to Redis with `SET` and TTL, proving cache-aside miss behavior.
+
 **4) Cache hit (second GET, no SET)**
 
 ![Cache hit](Screenshots/Screenshot%202026-02-18%20161948.png)
+
+Second read shows only `GET` in Redis with no `SET`, confirming the response was served from cache.
 
 **5) PUT invalidates cache (DEL)**
 
 ![PUT invalidation](Screenshots/Screenshot%202026-02-18%20162113.png)
 
+Update triggers a `DEL` for `product:{id}`, ensuring stale cache entries are removed.
+
 **6) DELETE invalidates cache and GET returns 404**
 
 ![DELETE invalidation + 404](Screenshots/Screenshot%202026-02-18%20162222.png)
+
+Deletion removes the cache entry and a follow-up `GET` returns `404 Not Found`.
 
 **7) Redis down fallback (GET still returns 200)**
 
 ![Redis fallback](Screenshots/Screenshot%202026-02-18%20162322.png)
 
-## Demo Video
+Demonstrates that when Redis is unavailable the API falls back to the DB and still returns data successfully.
 
-- Demo link (2-5 minutes): <add your video link here>
+## Additional Notes
 
-## Quick Demo Flow (for video)
-
-1. Create product via `POST /products`.
-2. First `GET /products/{id}` (cache miss, DB read + cache set).
-3. Second `GET /products/{id}` (cache hit).
-4. Update with `PUT /products/{id}` (cache invalidated).
-5. Delete with `DELETE /products/{id}` and show `GET` returns `404`.
-
-## Demo Script (2-5 minutes)
-
-1. `docker compose up --build`
-2. `curl.exe http://localhost:8080/health`
-3. Start monitor: `docker compose exec redis redis-cli monitor`
-4. Create product (POST) and copy `id`
-5. First GET (miss): show `GET` then `SET` in monitor
-6. Second GET (hit): show only `GET`
-7. PUT update: show `DEL` in monitor
-8. DELETE: show `DEL` in monitor, then GET returns `404`
-9. `docker compose stop redis`
-10. GET existing product: returns `200` (fallback)
-11. `docker compose start redis`
-
-## TTL Demo (Optional but recommended)
-
-1. Set `CACHE_TTL_SECONDS=5` in `.env.example` or environment.
-2. Restart stack: `docker compose up --build -d`
-3. Start monitor: `docker compose exec redis redis-cli monitor`
-4. GET product (expect `GET` + `SET`)
-5. Wait 6 seconds.
-6. GET product again (expect `GET` + `SET` again due to TTL expiry)
-
-## Submission Instructions
-
-Publish a **public GitHub repository** with the following mandatory artifacts:
-
-- Application code: complete backend source under `src/`
-- Comprehensive `README.md` (this file), including:
-  - Project title and description
-  - Setup/build/run instructions
-  - Automated test instructions
-  - API documentation with request/response examples
-  - Caching strategy explanation (cache-aside + invalidation)
-  - Design decisions summary
-  - Screenshots section
-  - Demo video link
-- `docker-compose.yml`
-- `.env.example`
-- `Dockerfile`
-- `tests/` with automated test suite
-
-Optional bonus artifacts:
-
-- `ARCHITECTURE.md` (included)
-- `PERFORMANCE.md` (included)
-
-## Evaluation Overview
-
-The project is designed to be evaluated on:
-
-- Functional correctness of API endpoints and status codes
-- Cache behavior: miss, hit, and invalidation after write operations
-- Resilience when Redis is unavailable (fallback to DB path)
-- Code quality and maintainability
-- Documentation clarity and completeness
-
-This repository includes integration tests covering endpoint behavior, cache flow, invalidation, validation, and startup seeding.
-
-## Common Mistakes to Avoid
-
-- Missing cache invalidation after `POST`, `PUT`, or `DELETE`
-- No fallback path when Redis read/write fails
-- Hardcoded config instead of environment variables
-- Weak test coverage for cache hit/miss/invalidation
-- Incomplete API docs and setup/test instructions
-- Missing input validation on product payloads
-
-## FAQ
-
-**Q: Can I use PostgreSQL/MySQL instead of SQLite?**  
-A: Yes. The caching behavior is the core requirement; persistence technology is flexible.
-
-**Q: Is authentication required?**  
-A: No. Auth is out of scope for this assignment.
-
-**Q: Do I need `GET /products` list endpoint?**  
-A: Not required. The core requirement is `GET /products/{id}` with cache-aside behavior.
-
-**Q: How do I demonstrate cache hit/miss in a demo?**  
-A: Use Redis monitor (`redis-cli monitor`) while calling `GET /products/{id}` twice for the same id.
-
-**Q: Can I use an ORM?**  
-A: Yes. This implementation uses SQLAlchemy.
-
-**Q: How do I run tests inside the API container?**  
-A: `docker compose exec api-service python -m pytest tests/`
+- Cache keys use the format `product:{id}` for predictable invalidation.
+- Redis errors are logged and do not crash the API.
+- Startup seeding inserts sample products only when the database is empty.
